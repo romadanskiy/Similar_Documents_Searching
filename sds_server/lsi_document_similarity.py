@@ -6,6 +6,8 @@ from typing import List
 import nltk
 from nltk.corpus import stopwords
 
+import re
+
 from pymorphy2 import MorphAnalyzer
 
 from translate import Translator
@@ -51,8 +53,8 @@ def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument
 
         lemmatized_tokens = []
         for token in tokens:
-            # Удаление неалфавитных токенов и стоп-слов
-            if token.isalpha() and token not in stop_words:
+            # Удаление токенов, не являющихся словами, и стоп-слов
+            if re.fullmatch(r'^[а-я]+(-[а-я]+)?$', token) and token not in stop_words:
                 # Лемматизация
                 lemmatized_tokens.append(morph.parse(token)[0].normal_form)
 
