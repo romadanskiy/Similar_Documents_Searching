@@ -4,7 +4,8 @@ from models.PreprocessedDocument import PreprocessedDocument
 from typing import List
 
 import nltk
-from nltk.corpus import stopwords
+
+import stopwordsiso as stopwords
 
 import re
 
@@ -15,8 +16,6 @@ from translate import Translator
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import TruncatedSVD
-
-from numpy import linalg as LA
 
 
 def get_document_similarity_matrix_with_lsi(documents: List[Document]):
@@ -38,8 +37,7 @@ def get_document_similarity_matrix_with_lsi(documents: List[Document]):
 
 def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument]:
     # Загрузка стоп-слов
-    nltk.download('stopwords')
-    stop_words = stopwords.words('russian')
+    stop_words = stopwords.stopwords("ru")
 
     # Cоздание лемматизатора
     morph = MorphAnalyzer()
@@ -48,8 +46,8 @@ def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument
     translator = Translator(to_lang="ru")
 
     def preprocess_text(text: str) -> List[str]:
-        # Токенизация и приведение к нижнему регистру
-        tokens = nltk.word_tokenize(text.lower())
+        # Приведение к нижнему регистру и токенизация
+        tokens = nltk.word_tokenize(text.lower(), language='russian')
 
         lemmatized_tokens = []
         for token in tokens:
