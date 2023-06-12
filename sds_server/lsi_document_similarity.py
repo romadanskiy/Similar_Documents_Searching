@@ -45,6 +45,9 @@ def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument
     # Создание переводчика
     translator = Translator(to_lang="ru")
 
+    # Создание регулярного выражения
+    regex = r'^[а-я]+(-[а-я]+)?$'
+
     def preprocess_text(text: str) -> List[str]:
         # Приведение к нижнему регистру и токенизация
         tokens = nltk.word_tokenize(text.lower(), language='russian')
@@ -52,7 +55,7 @@ def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument
         lemmatized_tokens = []
         for token in tokens:
             # Удаление токенов, не являющихся словами, и стоп-слов
-            if re.fullmatch(r'^[а-я]+(-[а-я]+)?$', token) and token not in stop_words:
+            if re.fullmatch(regex, token) and token not in stop_words:
                 # Лемматизация
                 lemmatized_tokens.append(morph.parse(token)[0].normal_form)
 
