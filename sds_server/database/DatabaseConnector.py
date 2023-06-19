@@ -10,25 +10,25 @@ class DatabaseConnector:
             config = json.load(file)
 
         # Получение данных для подключения к БД
-        self.host = config['DB_HOST']
-        self.username = config['DB_USERNAME']
-        self.password = config['DB_PASSWORD']
-        self.database = config['DB_DATABASE']
+        self._host = config['DB_HOST']
+        self._username = config['DB_USERNAME']
+        self._password = config['DB_PASSWORD']
+        self._database = config['DB_DATABASE']
 
-        self.connection = None
+        self._connection = None
 
     def connect(self):
-        self.connection = connect(
-            host=self.host,
-            user=self.username,
-            password=self.password,
-            database=self.database
+        self._connection = connect(
+            host=self._host,
+            user=self._username,
+            password=self._password,
+            database=self._database
         )
 
     def disconnect(self):
-        if self.connection is not None:
-            self.connection.close()
-            self.connection = None
+        if self._connection is not None:
+            self._connection.close()
+            self._connection = None
 
     def __enter__(self):
         self.connect()
@@ -38,11 +38,15 @@ class DatabaseConnector:
         self.disconnect()
 
     def execute_query(self, query):
-        with self.connection.cursor() as cursor:
+        if self._connection is None:
+            raise Exception("Нет установленого соединения с сервером базы данных")
+
+        with self._connection.cursor() as cursor:
+            # Выполнение запроса к БД
             cursor.execute(query)
-            # Получение имен столбцов
+            # Получение имен столбцов результата
             columns = [column[0] for column in cursor.description]
-            # Преобразование результатов в словари
+            # Преобразование результа в коллекцию словарей
             rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-            return rows
+        return rows

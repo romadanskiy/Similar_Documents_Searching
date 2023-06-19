@@ -11,38 +11,31 @@ from lsi_document_similarity import get_document_similarity_matrix_with_lsi
 
 app = Flask(__name__)
 
-# test_documents = []
-
-# test_documents.append(Document(1, "матрица вектор алгебра", True))
-# test_documents.append(Document(2, "спорт футбол мяч", True))
-# test_documents.append(Document(3, "мяч матрица", True))
-# test_documents.append(Document(4, "вектор алгебра спорт", True))
-# test_documents.append(Document(5, "матрица вектор", True))
-
-# test_documents.append(Document(1, "Матрицы и вектора являются фундаментальными понятиями в линейной алгебре.", True))
-# test_documents.append(Document(2, "Математическая статистика - это раздел математики, который изучает методы анализа данных и принятия статистических выводов на основе вероятностных моделей.", True))
-# test_documents.append(Document(3, "Матрица представляет собой двумерную таблицу чисел, расположенных в строках и столбцах.", True))
-# test_documents.append(Document(4, "Основная цель теории вероятностей - описать и формализовать случайные явления, а также предсказать их вероятности и свойства с помощью математических моделей.", True))
-# test_documents.append(Document(5, "Теория вероятностей - это математическая наука, которая изучает случайные явления и их вероятностные свойства.", True))
-# test_documents.append(Document(6, "В математической статистике исследуются различные статистические методы, такие как оценка параметров, проверка гипотез, построение доверительных интервалов и анализ дисперсии.", True))
-# test_documents.append(Document(7, "В линейной алгебре изучаются понятия векторов, матриц, линейных преобразований и их свойств.", True))
-# test_documents.append(Document(8, "В линейной алгебре матрицы и вектора играют важную роль и являются базовыми элементами.", True))
-# test_documents.append(Document(9, "В линейной алгебре фундаментальными понятиями являются вектора и матрицы.", True))
-
-# test_documents.append(Document(1, "Векторы нередко бывают разреженными, хотя это, конечно, зависит от данных.", True))
-# test_documents.append(Document(2, "Такая структура есть и называется префиксным деревом.", True))
-# test_documents.append(Document(3, "Префиксное дерево – это структура данных, в которой строки хранятся разложенными на символы.", True))
+# doc1 = Document(1, "url", True)
+# doc1.text = "Векторы нередко бывают разреженными, хотя это, конечно, зависит от данных."
+#
+# doc2 = Document(2, "url", True)
+# doc2.text = "Такая структура есть и называется префиксным деревом."
+#
+# doc3 = Document(3, "url", True)
+# doc3.text = "Префиксное дерево – это структура данных, в которой строки хранятся разложенными на символы."
+#
+# test_documents = [doc1, doc2, doc3]
 
 @app.route('/api/similar_documents/<int:article_id>', methods=['GET'])
 def get_similar_documents(article_id):
+    # Загрузка коллекции документов из БД
     documents = database_utils.get_documents()
 
+    # Загрузка текстов документов
     for document in documents:
         document.text = pdf_utils.process_url(document.url)
 
+    # Получение матрицы сходства документов с помощью LSI
     similarity_matrix, index_to_id = get_document_similarity_matrix_with_lsi(documents)
     id_to_index = {value: key for key, value in index_to_id.items()}
 
+    # Извлечение данных для запрашиваемого документов
     article_index = id_to_index[article_id]
     values = similarity_matrix[article_index]
 
@@ -52,9 +45,12 @@ def get_similar_documents(article_id):
         if other_article_id == article_id: continue
         result.append(LsiResult(other_article_id, round(value, 6)))
 
+    # Сортировка результатов по убыванию значения сходства документов
     sorted_result = sorted(result, key=lambda x: x.similarity, reverse=True)
+    # Выбор первых 10 документов
     top_10_result = sorted_result[:10]
 
+    # Представление результа в формате JSON
     json_result = [item.to_dict() for item in top_10_result]
 
     return jsonify(json_result)
