@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, make_response
 
 import database.database_utils as database_utils
-
 import pdf_utils
 
 from models.Document import Document
@@ -9,18 +8,9 @@ from models.LsiResult import LsiResult
 
 from lsi_document_similarity import get_document_similarity_matrix_with_lsi
 
+
 app = Flask(__name__)
 
-# doc1 = Document(1, "url", True)
-# doc1.text = "Векторы нередко бывают разреженными, хотя это, конечно, зависит от данных."
-#
-# doc2 = Document(2, "url", True)
-# doc2.text = "Такая структура есть и называется префиксным деревом."
-#
-# doc3 = Document(3, "url", True)
-# doc3.text = "Префиксное дерево – это структура данных, в которой строки хранятся разложенными на символы."
-#
-# test_documents = [doc1, doc2, doc3]
 
 @app.route('/api/similar_documents/<int:article_id>', methods=['GET'])
 def get_similar_documents(article_id):
@@ -50,9 +40,10 @@ def get_similar_documents(article_id):
     # Выбор первых 10 документов
     top_10_result = sorted_result[:10]
 
-    # Представление результа в формате JSON
+    # Представление результа в виде списка словарей
     json_result = [item.to_dict() for item in top_10_result]
 
+    # Преобразование списка словарей в JSON-ответ
     return jsonify(json_result)
 
 

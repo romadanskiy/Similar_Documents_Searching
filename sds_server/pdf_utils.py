@@ -2,12 +2,6 @@ import requests
 
 import fitz
 
-import concurrent.futures
-
-import asyncio
-
-import httpx
-
 
 def download_pdf_from_url(url):
     response = requests.get(url)

@@ -4,13 +4,9 @@ from models.PreprocessedDocument import PreprocessedDocument
 from typing import List
 
 import nltk
-
 import stopwordsiso as stopwords
-
 import re
-
 from pymorphy2 import MorphAnalyzer
-
 from translate import Translator
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -36,17 +32,10 @@ def get_document_similarity_matrix_with_lsi(documents: List[Document]):
 
 
 def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument]:
-    # Загрузка стоп-слов
-    stop_words = stopwords.stopwords("ru")
-
-    # Cоздание лемматизатора
-    morph = MorphAnalyzer()
-
-    # Создание переводчика
-    translator = Translator(to_lang="ru")
-
-    # Создание регулярного выражения
-    regex = r'^[а-я]+(-[а-я]+)?$'
+    stop_words = stopwords.stopwords("ru") # Загрузка стоп-слов
+    morph = MorphAnalyzer() # Инициализация лемматизатора
+    translator = Translator(to_lang="ru") # Инициализация переводчика
+    regex = r'^[а-я]+(-[а-я]+)?$' # Объявление регулярного выражения
 
     def preprocess_text(text: str) -> List[str]:
         # Приведение к нижнему регистру и токенизация
@@ -79,7 +68,7 @@ def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument
 
 
 def get_term_document_matrix(documents: List[PreprocessedDocument]):
-    # Создание экземпляра TfidfVectorizer
+    # Инициализация экземпляра TfidfVectorizer
     vectorizer = TfidfVectorizer(tokenizer=lambda d: d, lowercase=False)
 
     # Получения списка токенов и идентификаторов документов
