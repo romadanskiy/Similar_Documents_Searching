@@ -8,6 +8,8 @@ from models.LsiResult import LsiResult
 
 from lsi_document_similarity import get_document_similarity_matrix_with_lsi
 
+import concurrent.futures
+
 
 app = Flask(__name__)
 
@@ -17,9 +19,12 @@ def get_similar_documents(article_id):
     # Загрузка коллекции документов из БД
     documents = database_utils.get_documents()
 
-    # Загрузка текстов документов
-    for document in documents:
+    def get_text_for_document(document):
         document.text = pdf_utils.process_url(document.url)
+
+    # Параллельная загрузка текстов документов
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(get_text_for_document, documents)
 
     # Получение матрицы сходства документов с помощью LSI
     similarity_matrix, index_to_id = get_document_similarity_matrix_with_lsi(documents)

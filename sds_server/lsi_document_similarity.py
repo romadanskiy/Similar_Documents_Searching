@@ -13,6 +13,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import TruncatedSVD
 
+import concurrent.futures
+
 
 def get_document_similarity_matrix_with_lsi(documents: List[Document]):
     # 1. Предобработка текстов документов
@@ -50,21 +52,24 @@ def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument
 
         return lemmatized_tokens
 
-    preprocessed_documents = []
-    for document in documents:
+    def preprocess_document(document: Document) -> PreprocessedDocument:
         text_for_preprocessing = document.text
 
-        # Перевод инностранного текста на русский язык
+        # Перевод иностранного текста на русский язык
         if not document.is_russian:
             text_for_preprocessing = translator.translate(text_for_preprocessing)
 
         # Предобработка текста, получение токенов (терминов) документа
         document_tokens = preprocess_text(text_for_preprocessing)
 
-        # Сохранение предобработанного документа
-        preprocessed_documents.append(PreprocessedDocument(document.id, document_tokens))
+        # Возвращение предобработанного документа
+        return PreprocessedDocument(document.id, document_tokens)
 
-    return preprocessed_documents
+    # Параллельная предобработка документов
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        preprocessed_documents = executor.map(preprocess_document, documents)
+
+    return list(preprocessed_documents)
 
 
 def get_term_document_matrix(documents: List[PreprocessedDocument]):
