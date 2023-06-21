@@ -55,6 +55,9 @@ def preprocess_documents(documents: List[Document]) -> List[PreprocessedDocument
     def preprocess_document(document: Document) -> PreprocessedDocument:
         text_for_preprocessing = document.text
 
+        if text_for_preprocessing is None:
+            return PreprocessedDocument(document.id, [])
+
         # Перевод иностранного текста на русский язык
         if not document.is_russian:
             text_for_preprocessing = translator.translate(text_for_preprocessing)

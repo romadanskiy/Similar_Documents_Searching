@@ -30,6 +30,11 @@ class DatabaseConnector:
             self._connection.close()
             self._connection = None
 
+    def commit(self):
+        if self._connection is not None:
+            # Фиксация изменений в БД
+            self._connection.commit()
+
     def __enter__(self):
         self.connect()
         return self
@@ -37,16 +42,21 @@ class DatabaseConnector:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()
 
-    def execute_query(self, query):
+    def execute_query(self, query, *args):
         if self._connection is None:
             raise Exception("Нет установленого соединения с сервером базы данных")
 
         with self._connection.cursor() as cursor:
-            # Выполнение запроса к БД
-            cursor.execute(query)
-            # Получение имен столбцов результата
-            columns = [column[0] for column in cursor.description]
-            # Преобразование результа в коллекцию словарей
-            rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            # Выполнение запроса к БД с передачей параметров
+            cursor.execute(query, *args)
+            query_result = cursor.fetchall()
 
-        return rows
+            # Получение результатов, если они есть
+            if query_result:
+                # Получение имен столбцов результата
+                columns = [column[0] for column in cursor.description]
+                # Преобразование результа в коллекцию словарей
+                rows = [dict(zip(columns, row)) for row in query_result]
+                return rows
+
+        return None
